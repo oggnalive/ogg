@@ -1,0 +1,7 @@
+[main]
+host = https://www.transifex.com
+
+[o:oggnalive:p:oggnalive:r:qt-translation-025x]
+file_filter = src/qt/locale/oggnalive_<lang>.xlf
+source_file = src/qt/locale/oggnalive_en.xlf
+source_lang = en

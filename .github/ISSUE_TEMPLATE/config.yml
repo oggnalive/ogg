@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: oggnalive Core Security Policy
+    url: https://github.com/oggnalive/oggnalive/blob/master/SECURITY.md
+    about: View security policy
+  - name: oggnalive Core Developers
+    url: https://bitcoincore.org
+    about: oggnalive Core homepage

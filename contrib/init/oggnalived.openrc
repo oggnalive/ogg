@@ -1,0 +1,93 @@
+#!/sbin/openrc-run
+
+# backward compatibility for existing gentoo layout 
+#
+if [ -d "/var/lib/oggnalive/.oggnalive" ]; then
+	OGGNALIVED_DEFAULT_DATADIR="/var/lib/oggnalive/.oggnalive"
+else
+	OGGNALIVED_DEFAULT_DATADIR="/var/lib/oggnalived"
+fi
+
+OGGNALIVED_CONFIGFILE=${OGGNALIVED_CONFIGFILE:-/etc/oggnalive/oggnalive.conf}
+OGGNALIVED_PIDDIR=${OGGNALIVED_PIDDIR:-/var/run/oggnalived}
+OGGNALIVED_PIDFILE=${OGGNALIVED_PIDFILE:-${OGGNALIVED_PIDDIR}/oggnalived.pid}
+OGGNALIVED_DATADIR=${OGGNALIVED_DATADIR:-${OGGNALIVED_DEFAULT_DATADIR}}
+OGGNALIVED_USER=${OGGNALIVED_USER:-${OGGNALIVE_USER:-oggnalive}}
+OGGNALIVED_GROUP=${OGGNALIVED_GROUP:-oggnalive}
+OGGNALIVED_BIN=${OGGNALIVED_BIN:-/usr/bin/oggnalived}
+OGGNALIVED_NICE=${OGGNALIVED_NICE:-${NICELEVEL:-0}}
+OGGNALIVED_OPTS="${OGGNALIVED_OPTS:-${OGGNALIVE_OPTS}}"
+
+name="oggnalive Core Daemon"
+description="oggnalive cryptocurrency P2P network daemon"
+
+command="/usr/bin/oggnalived"
+command_args="-pid=\"${OGGNALIVED_PIDFILE}\" \
+		-conf=\"${OGGNALIVED_CONFIGFILE}\" \
+		-datadir=\"${OGGNALIVED_DATADIR}\" \
+		-daemon \
+		${OGGNALIVED_OPTS}"
+
+required_files="${OGGNALIVED_CONFIGFILE}"
+start_stop_daemon_args="-u ${OGGNALIVED_USER} \
+			-N ${OGGNALIVED_NICE} -w 2000"
+pidfile="${OGGNALIVED_PIDFILE}"
+
+# The retry schedule to use when stopping the daemon. Could be either
+# a timeout in seconds or multiple signal/timeout pairs (like
+# "SIGKILL/180 SIGTERM/300")
+retry="${OGGNALIVED_SIGTERM_TIMEOUT}"
+
+depend() {
+	need localmount net
+}
+
+# verify
+# 1) that the datadir exists and is writable (or create it)
+# 2) that a directory for the pid exists and is writable
+# 3) ownership and permissions on the config file
+start_pre() {
+	checkpath \
+	-d \
+	--mode 0750 \
+	--owner "${OGGNALIVED_USER}:${OGGNALIVED_GROUP}" \
+	"${OGGNALIVED_DATADIR}"
+
+	checkpath \
+	-d \
+	--mode 0755 \
+	--owner "${OGGNALIVED_USER}:${OGGNALIVED_GROUP}" \
+	"${OGGNALIVED_PIDDIR}"
+
+	checkpath -f \
+	-o "${OGGNALIVED_USER}:${OGGNALIVED_GROUP}" \
+	-m 0660 \
+	"${OGGNALIVED_CONFIGFILE}"
+
+	checkconfig || return 1
+}
+
+checkconfig()
+{
+	if grep -qs '^rpcuser=' "${OGGNALIVED_CONFIGFILE}" && \
+		! grep -qs '^rpcpassword=' "${OGGNALIVED_CONFIGFILE}" ; then
+		eerror ""
+		eerror "ERROR: You must set a secure rpcpassword to run oggnalived."
+		eerror "The setting must appear in ${OGGNALIVED_CONFIGFILE}"
+		eerror ""
+		eerror "This password is security critical to securing wallets "
+		eerror "and must not be the same as the rpcuser setting."
+		eerror "You can generate a suitable random password using the following "
+		eerror "command from the shell:"
+		eerror ""
+		eerror "bash -c 'tr -dc a-zA-Z0-9 < /dev/urandom | head -c32 && echo'"
+		eerror ""
+		eerror "It is recommended that you also set alertnotify so you are "
+		eerror "notified of problems:"
+		eerror ""
+		eerror "ie: alertnotify=echo %%s | mail -s \"oggnalive Alert\"" \
+			"admin@foo.com"
+		eerror ""
+		return 1
+	fi
+}

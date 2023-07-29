@@ -1,0 +1,33 @@
+# /etc/conf.d/oggnalived: config file for /etc/init.d/oggnalived
+
+# Config file location
+#OGGNALIVED_CONFIGFILE="/etc/oggnalive/oggnalive.conf"
+
+# What directory to write pidfile to?  (created and owned by $OGGNALIVED_USER)
+#OGGNALIVED_PIDDIR="/var/run/oggnalived"
+
+# What filename to give the pidfile
+#OGGNALIVED_PIDFILE="${OGGNALIVED_PIDDIR}/oggnalived.pid"
+
+# Where to write oggnalived data (be mindful that the blockchain is large)
+#OGGNALIVED_DATADIR="/var/lib/oggnalived"
+
+# User and group to own oggnalived process
+#OGGNALIVED_USER="oggnalive"
+#OGGNALIVED_GROUP="oggnalive"
+
+# Path to oggnalived executable
+#OGGNALIVED_BIN="/usr/bin/oggnalived"
+
+# Nice value to run oggnalived under
+#OGGNALIVED_NICE=0
+
+# Additional options (avoid -conf and -datadir, use flags above)
+#OGGNALIVED_OPTS=""
+
+# The timeout in seconds OpenRC will wait for oggnalived to terminate
+# after a SIGTERM has been raised.
+# Note that this will be mapped as argument to start-stop-daemon's
+# '--retry' option, which means you can specify a retry schedule
+# here. For more information see man 8 start-stop-daemon.
+OGGNALIVED_SIGTERM_TIMEOUT=600
